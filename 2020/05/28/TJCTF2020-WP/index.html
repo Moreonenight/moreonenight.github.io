@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="Rika">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Rika">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content>
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>TJCTF 2020 部分题目的 Write-up · Rika&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" href="/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href="/assets/favicon.ico">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+        <!-- algolia -->
+        <script>
+            
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"搜索文章","hits_empty":"未搜索到任何结果: ${query}","hits_stats":"在 ${time} ms 内找到了 ${hits} 个结果"}')
+
+            var algolia = {
+                applicationID: 'AMKU0AO42D',
+                apiKey: '373c58e747a0cd559f5755fa57364947',
+                indexName: 'moreonenight',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Rika&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">TJCTF 2020 部分题目的 Write-up</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>Rika's Blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            TJCTF 2020 部分题目的 Write-up
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "CTF, Write-up">CTF, Write-up</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">1.6k</span>阅读时长: <span class="post-count reading-time">7 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2020/05/28</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <blockquote>
+<p>TJCTF 2020 网址请点击<a href="https://tjctf.org/" target="_blank" rel="noopener">此处</a>，另外有支队伍在 Discord 群组里发了完整的 <a href="https://github.com/joshdabosh/writeups/tree/master/2020-TJCTF" target="_blank" rel="noopener">Write-up</a>.</p>
+</blockquote>
+<a id="more"></a>
+<h1>Difficult Decryption - 100 Point</h1>
+<h2 id="题意"><a class="header-anchor" href="#题意">¶</a>题意</h2>
+<p>题目给出了 Alice 和 Bob 之间进行 Diffie-Hellman 密钥协商的过程。已知所用模数 <code>Modulus</code> 和相应原根 <code>Base</code>，并且已知 <code>(Base ** A) % Modulus</code> 和 <code>(Base ** B) % Modulus</code> 的值，给定密文 <code>cipher = message ^ (pow((Base ** B % Modulus), A, modulus))</code>（注意：这里的 “^” 表示异或运算），求解明文 <code>plain = bytes.fromhex(hex(message)[2:])</code>，题目给出的值如下：</p>
+<p><code>Modulus: 491988559103692092263984889813697016406</code></p>
+<p><code>Base: 5</code></p>
+<p><code>Base ** A % Modulus: 232042342203461569340683568996607232345</code></p>
+<p><code>Base ** B % Modulus: 76405255723702450233149901853450417505</code></p>
+<p><code>cipher: 12259991521844666821961395299843462461536060465691388049371797540470</code></p>
+<h2 id="解答"><a class="header-anchor" href="#解答">¶</a>解答</h2>
+<p>由异或运算的基本性质可知，<code>message = cipher ^ (pow((Base ** B % Modulus), A, Modulus))</code>，故只需解出 A 即可。可以直接使用 <a href="https://sagecell.sagemath.org/" target="_blank" rel="noopener">SageMathCell</a> 在线求解。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ZmodN = Zmod(<span class="number">491988559103692092263984889813697016406</span>)</span><br><span class="line">m = ZmodN(<span class="number">232042342203461569340683568996607232345</span>)</span><br><span class="line">base = ZmodN(<span class="number">5</span>)</span><br><span class="line">print(m.log(base))</span><br></pre></td></tr></table></figure>
+<p>解得 <code>A = 25222735067058727456</code>，代入上式可知 <code>message = 12259991521844666821961395299795867143478147128538917271758674534781</code><br>
+解得明文 <code>plain = tjctf{Ali3ns_1iv3_am0ng_us!}</code></p>
+<br>
+<h1>Gamer W - 60 Point</h1>
+<h2 id="题意-v2"><a class="header-anchor" href="#题意-v2">¶</a>题意</h2>
+<p>题目给了一个用 Unity WebGL 制作的在线小游戏，题目提示为下载 Chrome 浏览器的 CETUS 插件，并通过作弊取得游戏胜利。</p>
+<h2 id="解答-v2"><a class="header-anchor" href="#解答-v2">¶</a>解答</h2>
+<p>CETUS 插件的用法和 Cheat Engine 类似。游戏需要修改攻击力才能击败最终 Boss（否则 Boss 回血比打掉的还多），Boss 丝血时玩家会被封住。这时可以把人物移速改得比较大，从而绕过障碍物的判定并击杀 Boss，然后就能得到 flag.</p>
+<br>
+<h1>Gamer F - 80 Point</h1>
+<h2 id="题意-v3"><a class="header-anchor" href="#题意-v3">¶</a>题意</h2>
+<p>题目给了一个用 Unity 制作的游戏，要求找出隐藏在其中的 flag.</p>
+<h2 id="解答-v3"><a class="header-anchor" href="#解答-v3">¶</a>解答</h2>
+<p>用 <a href="https://github.com/0xd4d/dnSpy" target="_blank" rel="noopener">dnSpy</a> 可以对 C# 代码进行反编译，用 <a href="https://github.com/Perfare/AssetStudio" target="_blank" rel="noopener">AssetStudio</a>（被 DMCA Takedown 之前叫 UnityStudio）可以拆包 Unity 的资源文件。</p>
+<p>对本题而言，需要反编译的文件是 <code>./SnakeTris/SnakeTris_Data/Managed/Assembly-CSharp.dll</code>，需要拆包的文件是 <code>./SnakeTris/SnakeTris_Data/level0</code></p>
+<p>dnSpy 反编译的效果很好，图中的 16 进制数用 python 的 bytes.fromhex() 函数处理可以得到 flag 的第一部分。</p>
+<p><img src="./flag_part_1.jpg" alt="flag_part_1"></p>
+<p>用 AssetStudio 打开 level0，选择 Exports - All Assets 可以导出拆包后的资源文件，在 AudioChip 文件夹下可以找到 Victory Sound01/02.wav 文件，用英语/日语念了一遍 flag 的第二部分。</p>
+<p>直接用文本编辑器打开 level0，可以看到有一个 string 是 flag 的第三部分。不清楚 AssetStudio 拆包时候会把 string 拆到什么位置，笔者没有找到。</p>
+<br>
+<h1>Gamer R - 80 Point</h1>
+<h2 id="题意-v4"><a class="header-anchor" href="#题意-v4">¶</a>题意</h2>
+<p>题目给了一个用 Unity 制作的游戏，要求找出隐藏在其中的 flag.</p>
+<h2 id="解答-v4"><a class="header-anchor" href="#解答-v4">¶</a>解答</h2>
+<p>还是用 dnSpy 拆包，可以找到打印 flag 的代码。但是笔者不知道用到的字符串是在哪里初始化的。</p>
+<p><img src="./flag.jpg" alt="flag"></p>
+<p>所以我们直接右键 - 编辑方法，把本来会一个字符一个字符打印出的 flag 存进字符串里（具体代码见下图），然后右键 - 添加断点。</p>
+<p>要动态调试 Unity 游戏， 需要从 dnSpy 的 <a href="https://github.com/0xd4d/dnSpy/releases" target="_blank" rel="noopener">releases</a> 里下载 <code>Unity-debugging-2019.x.zip</code>（具体选哪个依据游戏 .exe 文件属性中的文件版本决定），然后用相应版本（本题为unity-2019.1.2, win64）的 <code>mono-2.0-bdwgc.dll</code> 换掉游戏中 <code>MonoBleedingEdge/EmbedRuntime</code> 下的同名文件。</p>
+<p><strong>然后在dnSpy中点击保存（运行游戏并不会自动保存）</strong>，并点击启动，选择 Unity 调试引擎，输入游戏可执行文件的路径开始调试，结果如下：</p>
+<p><img src="./flag_print.jpg" alt="flag_print"></p>
+<p>得到字符串：<code>&quot;Here's the flag you're looking for! haha jkjk... unless..? tjctf{orenji_manggoe}&quot;</code></p>
+<br>
+<h1>Gamer M - 100 Point</h1>
+<h2 id="题意-v5"><a class="header-anchor" href="#题意-v5">¶</a>题意</h2>
+<p>题目给了一个使用 <code>nc p1.tjctf.org 8007</code> 连接到的远程服务器及服务器的源代码 .py 文件，要求得到服务器上的 flag.</p>
+<h2 id="解答-v5"><a class="header-anchor" href="#解答-v5">¶</a>解答</h2>
+<p>可以看到源代码中的 shuffle 函数：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">shuffle</span><span class="params">(s)</span>:</span></span><br><span class="line">	<span class="keyword">for</span> i <span class="keyword">in</span> range(len(s)):</span><br><span class="line">		j = random.randint(<span class="number">0</span>, len(s) - <span class="number">1</span>)</span><br><span class="line">		s[i], s[j] = s[j], s[i]</span><br><span class="line">	<span class="keyword">return</span> s</span><br></pre></td></tr></table></figure>
+<p>并非完全随机。我们把这个函数单独拿出来实验，可以得到如果传入的列表有五个元素的话，原本的第 n 个元素最可能在第 n + 1 个返回（n 取 1, 2, 3, 4），剩下的元素就是原本的第一个元素。</p>
+<p>可以写出如下脚本来重复进行 5000 次游戏并且保存结果：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> socket</span><br><span class="line"></span><br><span class="line">host = <span class="string">'p1.tjctf.org'</span></span><br><span class="line">port = <span class="number">8007</span></span><br><span class="line">addr=(host,port)</span><br><span class="line">filepath = <span class="string">"./myanswer.txt"</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> k <span class="keyword">in</span> range(<span class="number">5000</span>):</span><br><span class="line">    tcpCliSock=socket.socket(socket.AF_INET,socket.SOCK_STREAM)</span><br><span class="line">    tcpCliSock.connect(addr)    </span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        myfile = open(filepath, <span class="string">'a+'</span>, encoding = <span class="string">"utf-8"</span>)</span><br><span class="line">        data = tcpCliSock.recv(<span class="number">512</span>)</span><br><span class="line">        mystr = data.decode()</span><br><span class="line">        msg1 = <span class="string">'rock\n'</span></span><br><span class="line">        msg2 = <span class="string">'paper\n'</span></span><br><span class="line">        msg3 = <span class="string">'scissors\n'</span></span><br><span class="line">        <span class="keyword">if</span> mystr.find(<span class="string">'A disciple stands in your way! Take your action!'</span>) != <span class="number">-1</span>:</span><br><span class="line">            tcpCliSock.send(msg1.encode())</span><br><span class="line">        <span class="keyword">if</span> mystr.find(<span class="string">'A disciple blocks your way! Take your action!'</span>) != <span class="number">-1</span>:</span><br><span class="line">            tcpCliSock.send(msg2.encode())</span><br><span class="line">        <span class="keyword">if</span> mystr.find(<span class="string">'A disciple stalls your advance! Take your action!'</span>) != <span class="number">-1</span>:</span><br><span class="line">            tcpCliSock.send(msg3.encode())</span><br><span class="line">        print(mystr, file = myfile)</span><br><span class="line">        <span class="keyword">if</span> mystr.find(<span class="string">'You triumphed over all trials!'</span>) != <span class="number">-1</span>:</span><br><span class="line">            tcpCliSock.close()</span><br><span class="line">            myfile.close()</span><br><span class="line">            <span class="keyword">break</span></span><br></pre></td></tr></table></figure>
+<p>然后用如下脚本处理游戏结果，获得出现次数：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">perlist = [&#123;<span class="string">"t"</span>,<span class="string">"6"</span>,<span class="string">"0"</span>,<span class="string">"R"</span>,<span class="string">"&#123;"</span>&#125;,&#123;<span class="string">"j"</span>,<span class="string">"3"</span>,<span class="string">"i"</span>,<span class="string">"e"</span>,<span class="string">"b"</span>&#125;,&#123;<span class="string">"c"</span>,<span class="string">"n"</span>,<span class="string">"4"</span>,<span class="string">"o"</span>,<span class="string">"5"</span>&#125;,&#123;<span class="string">"t"</span>,<span class="string">"r"</span>,<span class="string">"C"</span>,<span class="string">"A"</span>,<span class="string">"2"</span>&#125;,&#123;<span class="string">"f"</span>,<span class="string">"F"</span>,<span class="string">"x"</span>,<span class="string">"J"</span>,<span class="string">"&#125;"</span>&#125;]</span><br><span class="line">result = []</span><br><span class="line">result.append([&#123;<span class="string">"t"</span>:<span class="number">0</span>,<span class="string">"6"</span>:<span class="number">0</span>,<span class="string">"0"</span>:<span class="number">0</span>,<span class="string">"R"</span>:<span class="number">0</span>,<span class="string">"&#123;"</span>:<span class="number">0</span>&#125;,&#123;<span class="string">"t"</span>:<span class="number">0</span>,<span class="string">"6"</span>:<span class="number">0</span>,<span class="string">"0"</span>:<span class="number">0</span>,<span class="string">"R"</span>:<span class="number">0</span>,<span class="string">"&#123;"</span>:<span class="number">0</span>&#125;,&#123;<span class="string">"t"</span>:<span class="number">0</span>,<span class="string">"6"</span>:<span class="number">0</span>,<span class="string">"0"</span>:<span class="number">0</span>,<span class="string">"R"</span>:<span class="number">0</span>,<span class="string">"&#123;"</span>:<span class="number">0</span>&#125;,&#123;<span class="string">"t"</span>:<span class="number">0</span>,<span class="string">"6"</span>:<span class="number">0</span>,<span class="string">"0"</span>:<span class="number">0</span>,<span class="string">"R"</span>:<span class="number">0</span>,<span class="string">"&#123;"</span>:<span class="number">0</span>&#125;,&#123;<span class="string">"t"</span>:<span class="number">0</span>,<span class="string">"6"</span>:<span class="number">0</span>,<span class="string">"0"</span>:<span class="number">0</span>,<span class="string">"R"</span>:<span class="number">0</span>,<span class="string">"&#123;"</span>:<span class="number">0</span>&#125;])</span><br><span class="line">result.append([&#123;<span class="string">"j"</span>:<span class="number">0</span>,<span class="string">"3"</span>:<span class="number">0</span>,<span class="string">"i"</span>:<span class="number">0</span>,<span class="string">"e"</span>:<span class="number">0</span>,<span class="string">"b"</span>:<span class="number">0</span>&#125;,&#123;<span class="string">"j"</span>:<span class="number">0</span>,<span class="string">"3"</span>:<span class="number">0</span>,<span class="string">"i"</span>:<span class="number">0</span>,<span class="string">"e"</span>:<span class="number">0</span>,<span class="string">"b"</span>:<span class="number">0</span>&#125;,&#123;<span class="string">"j"</span>:<span class="number">0</span>,<span class="string">"3"</span>:<span class="number">0</span>,<span class="string">"i"</span>:<span class="number">0</span>,<span class="string">"e"</span>:<span class="number">0</span>,<span class="string">"b"</span>:<span class="number">0</span>&#125;,&#123;<span class="string">"j"</span>:<span class="number">0</span>,<span class="string">"3"</span>:<span class="number">0</span>,<span class="string">"i"</span>:<span class="number">0</span>,<span class="string">"e"</span>:<span class="number">0</span>,<span class="string">"b"</span>:<span class="number">0</span>&#125;,&#123;<span class="string">"j"</span>:<span class="number">0</span>,<span class="string">"3"</span>:<span class="number">0</span>,<span class="string">"i"</span>:<span class="number">0</span>,<span class="string">"e"</span>:<span class="number">0</span>,<span class="string">"b"</span>:<span class="number">0</span>&#125;])</span><br><span class="line">result.append([&#123;<span class="string">"c"</span>:<span class="number">0</span>,<span class="string">"n"</span>:<span class="number">0</span>,<span class="string">"4"</span>:<span class="number">0</span>,<span class="string">"o"</span>:<span class="number">0</span>,<span class="string">"5"</span>:<span class="number">0</span>&#125;,&#123;<span class="string">"c"</span>:<span class="number">0</span>,<span class="string">"n"</span>:<span class="number">0</span>,<span class="string">"4"</span>:<span class="number">0</span>,<span class="string">"o"</span>:<span class="number">0</span>,<span class="string">"5"</span>:<span class="number">0</span>&#125;,&#123;<span class="string">"c"</span>:<span class="number">0</span>,<span class="string">"n"</span>:<span class="number">0</span>,<span class="string">"4"</span>:<span class="number">0</span>,<span class="string">"o"</span>:<span class="number">0</span>,<span class="string">"5"</span>:<span class="number">0</span>&#125;,&#123;<span class="string">"c"</span>:<span class="number">0</span>,<span class="string">"n"</span>:<span class="number">0</span>,<span class="string">"4"</span>:<span class="number">0</span>,<span class="string">"o"</span>:<span class="number">0</span>,<span class="string">"5"</span>:<span class="number">0</span>&#125;,&#123;<span class="string">"c"</span>:<span class="number">0</span>,<span class="string">"n"</span>:<span class="number">0</span>,<span class="string">"4"</span>:<span class="number">0</span>,<span class="string">"o"</span>:<span class="number">0</span>,<span class="string">"5"</span>:<span class="number">0</span>&#125;])</span><br><span class="line">result.append([&#123;<span class="string">"t"</span>:<span class="number">0</span>,<span class="string">"r"</span>:<span class="number">0</span>,<span class="string">"C"</span>:<span class="number">0</span>,<span class="string">"A"</span>:<span class="number">0</span>,<span class="string">"2"</span>:<span class="number">0</span>&#125;,&#123;<span class="string">"t"</span>:<span class="number">0</span>,<span class="string">"r"</span>:<span class="number">0</span>,<span class="string">"C"</span>:<span class="number">0</span>,<span class="string">"A"</span>:<span class="number">0</span>,<span class="string">"2"</span>:<span class="number">0</span>&#125;,&#123;<span class="string">"t"</span>:<span class="number">0</span>,<span class="string">"r"</span>:<span class="number">0</span>,<span class="string">"C"</span>:<span class="number">0</span>,<span class="string">"A"</span>:<span class="number">0</span>,<span class="string">"2"</span>:<span class="number">0</span>&#125;,&#123;<span class="string">"t"</span>:<span class="number">0</span>,<span class="string">"r"</span>:<span class="number">0</span>,<span class="string">"C"</span>:<span class="number">0</span>,<span class="string">"A"</span>:<span class="number">0</span>,<span class="string">"2"</span>:<span class="number">0</span>&#125;,&#123;<span class="string">"t"</span>:<span class="number">0</span>,<span class="string">"r"</span>:<span class="number">0</span>,<span class="string">"C"</span>:<span class="number">0</span>,<span class="string">"A"</span>:<span class="number">0</span>,<span class="string">"2"</span>:<span class="number">0</span>&#125;])</span><br><span class="line">result.append([&#123;<span class="string">"f"</span>:<span class="number">0</span>,<span class="string">"F"</span>:<span class="number">0</span>,<span class="string">"x"</span>:<span class="number">0</span>,<span class="string">"J"</span>:<span class="number">0</span>,<span class="string">"&#125;"</span>:<span class="number">0</span>&#125;,&#123;<span class="string">"f"</span>:<span class="number">0</span>,<span class="string">"F"</span>:<span class="number">0</span>,<span class="string">"x"</span>:<span class="number">0</span>,<span class="string">"J"</span>:<span class="number">0</span>,<span class="string">"&#125;"</span>:<span class="number">0</span>&#125;,&#123;<span class="string">"f"</span>:<span class="number">0</span>,<span class="string">"F"</span>:<span class="number">0</span>,<span class="string">"x"</span>:<span class="number">0</span>,<span class="string">"J"</span>:<span class="number">0</span>,<span class="string">"&#125;"</span>:<span class="number">0</span>&#125;,&#123;<span class="string">"f"</span>:<span class="number">0</span>,<span class="string">"F"</span>:<span class="number">0</span>,<span class="string">"x"</span>:<span class="number">0</span>,<span class="string">"J"</span>:<span class="number">0</span>,<span class="string">"&#125;"</span>:<span class="number">0</span>&#125;,&#123;<span class="string">"f"</span>:<span class="number">0</span>,<span class="string">"F"</span>:<span class="number">0</span>,<span class="string">"x"</span>:<span class="number">0</span>,<span class="string">"J"</span>:<span class="number">0</span>,<span class="string">"&#125;"</span>:<span class="number">0</span>&#125;])</span><br><span class="line">filepath = <span class="string">"./myanswer.txt"</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> open(filepath, <span class="string">'r+'</span>, encoding = <span class="string">"utf-8"</span>) <span class="keyword">as</span> myfile:</span><br><span class="line">    mylist = []</span><br><span class="line">    <span class="keyword">for</span> line <span class="keyword">in</span> myfile.readlines():</span><br><span class="line">        <span class="keyword">if</span> line.find(<span class="string">"dropped"</span>) != <span class="number">-1</span>:</span><br><span class="line">            mylist.append(line[<span class="number">-2</span>])</span><br><span class="line">        <span class="keyword">if</span> len(mylist) == <span class="number">5</span>:</span><br><span class="line">            <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">5</span>):</span><br><span class="line">                <span class="keyword">if</span> perlist[i] == set(mylist):</span><br><span class="line">                    <span class="keyword">for</span> j <span class="keyword">in</span> range(<span class="number">5</span>):</span><br><span class="line">                        result[i][j][mylist[j]] += <span class="number">1</span></span><br><span class="line">                    mylist = []</span><br><span class="line">                    <span class="keyword">break</span></span><br><span class="line">print(result)</span><br></pre></td></tr></table></figure>
+<p>然后应该就能分析出 flag，如果运气差，词频有问题，可以再执行一遍第一个脚本，接着来 5000 次游戏。</p>
+
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>发表日期：<a href="http://moreonenight.com/2020/05/28/TJCTF2020-WP/">May 28th 2020, 2:31:36 pm</a>
+            <p>最后更新：<a href="http://moreonenight.com/2020/05/28/TJCTF2020-WP/">May 28th 2020, 4:22:40 pm</a>
+            <p>说明：本文依<a rel="license" href="https://creativecommons.org/licenses/by/4.0/deed.zh"> CC-BY 4.0 </a>发布，转载请注明出处</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2019/10/06/test/" title= "测试 Hexo 搭配 Archer 主题的效果">
+                    <div class="prevTitle">测试 Hexo 搭配 Archer 主题的效果</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+    <div id="lv-container" data-id="city" data-uid= MTAyMC80NzA0Mi8yMzU0Mg==>
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
+
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活JavaScript</noscript>
+    </div>
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:moreonenightchito@gmail.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/moreonenight" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="//steamcommunity.com/profiles/76561198845431604/" class="iconfont-archer steam" target="_blank" title=steam></a>
+            
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span class="iconfont-archer power">&#169;</span><span id="my-blog">2019 Moreonenight</span><span class="iconfont-archer power">&#xe635;</span>
+		<span id="theme-info">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+	
+     
+    <span id="busuanzi_container_site_pv">本站访问量: <span id="busuanzi_value_site_pv"></span> 次</span>
+    
+    <span id="busuanzi_container_site_uv">本站访问数: <span id="busuanzi_value_site_uv"></span> 人</span>
+    
+    </div>
+    
+	<div class="busuanzi-container">
+	<br/>
+	<span id="about-me" style="display: inline-block;"><a href="/about">关于本站</a></span>
+	<span id="privacy-policy" style="display: inline-block;"><a href="/policy">隐私政策</a></span>
+	<span id="legal-disclaimer" style="display: inline-block;"><a href="/disclaimer">免责声明</a></span>
+	</div>
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#null"><span class="toc-number">1.</span> <span class="toc-text">Difficult Decryption - 100 Point</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#题意"><span class="toc-number">1.1.</span> <span class="toc-text">¶题意</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#解答"><span class="toc-number">1.2.</span> <span class="toc-text">¶解答</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#null"><span class="toc-number">2.</span> <span class="toc-text">Gamer W - 60 Point</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#题意-v2"><span class="toc-number">2.1.</span> <span class="toc-text">¶题意</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#解答-v2"><span class="toc-number">2.2.</span> <span class="toc-text">¶解答</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#null"><span class="toc-number">3.</span> <span class="toc-text">Gamer F - 80 Point</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#题意-v3"><span class="toc-number">3.1.</span> <span class="toc-text">¶题意</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#解答-v3"><span class="toc-number">3.2.</span> <span class="toc-text">¶解答</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#null"><span class="toc-number">4.</span> <span class="toc-text">Gamer R - 80 Point</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#题意-v4"><span class="toc-number">4.1.</span> <span class="toc-text">¶题意</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#解答-v4"><span class="toc-number">4.2.</span> <span class="toc-text">¶解答</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#null"><span class="toc-number">5.</span> <span class="toc-text">Gamer M - 100 Point</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#题意-v5"><span class="toc-number">5.1.</span> <span class="toc-text">¶题意</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#解答-v5"><span class="toc-number">5.2.</span> <span class="toc-text">¶解答</span></a></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 2
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger">
+                <span class="iconfont-archer search-icon">&#xe627;</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/28</span><a class="archive-post-title" href= "/2020/05/28/TJCTF2020-WP/" >TJCTF 2020 部分题目的 Write-up</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/06</span><a class="archive-post-title" href= "/2019/10/06/test/" >测试 Hexo 搭配 Archer 主题的效果</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="测试"><span class="iconfont-archer">&#xe606;</span>测试</span>
+    
+        <span class="sidebar-tag-name" data-tags="CTF, Write-up"><span class="iconfont-archer">&#xe606;</span>CTF, Write-up</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Rika"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+        <div class="site-search">
+  <div class="algolia-popup popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="iconfont-archer">&#xe609;</i>
+    </span>
+  </div>
+</div>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.8.0/dist/instantsearch.min.js" defer></script>
+        <script src="/scripts/search.js" defer></script>
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+
